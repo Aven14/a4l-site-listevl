@@ -26,6 +26,11 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password)
         if (!isValid) return null
 
+        // Vérifier que le compte est vérifié (sauf pour les comptes système)
+        if (!user.isVerified && user.role?.name !== 'superadmin' && user.role?.name !== 'admin') {
+          throw new Error('UNVERIFIED')
+        }
+
         return {
           id: user.id,
           name: user.username,

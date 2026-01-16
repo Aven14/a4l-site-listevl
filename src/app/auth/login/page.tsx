@@ -1,14 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Afficher un message de succès si l'utilisateur vient de vérifier son compte
+    if (searchParams.get('verified') === 'true') {
+      setError('')
+      // Le message sera affiché via un état de succès si nécessaire
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -16,15 +25,33 @@ export default function LoginPage() {
     setError('')
 
     const formData = new FormData(e.currentTarget)
+    const username = formData.get('username') as string
 
     const res = await signIn('credentials', {
-      username: formData.get('username'),
+      username,
       password: formData.get('password'),
       redirect: false,
     })
 
     if (res?.error) {
-      setError('Identifiants incorrects')
+      if (res.error === 'UNVERIFIED') {
+        // Récupérer l'email de l'utilisateur pour rediriger vers la vérification
+        // On va devoir faire une requête pour obtenir l'email
+        try {
+          const userRes = await fetch(`/api/auth/user-email?username=${encodeURIComponent(username)}`)
+          const userData = await userRes.json()
+          
+          if (userData.email) {
+            router.push(`/auth/verify?email=${encodeURIComponent(userData.email)}&unverified=true`)
+            return
+          }
+        } catch (e) {
+          // Si on ne peut pas récupérer l'email, afficher un message générique
+        }
+        setError('Votre compte n\'est pas encore vérifié. Veuillez vérifier votre e-mail.')
+      } else {
+        setError('Identifiants incorrects')
+      }
       setLoading(false)
     } else {
       router.push('/admin')
@@ -44,6 +71,11 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {searchParams.get('verified') === 'true' && (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-green-400 text-center">
+                Compte vérifié avec succès ! Vous pouvez maintenant vous connecter.
+              </div>
+            )}
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-center">
                 {error}

@@ -29,15 +29,19 @@ model Role {
 
 // Utilisateurs du site
 model User {
-  id            String    @id @default(cuid())
-  username      String?   @unique
-  email         String?   @unique
-  password      String?
-  image         String?
-  roleId        String?
-  role          Role?     @relation(fields: [roleId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  username          String?   @unique
+  email             String?   @unique
+  password          String?
+  image             String?
+  roleId            String?
+  role              Role?     @relation(fields: [roleId], references: [id])
+  isVerified        Boolean   @default(false)
+  verificationCode  String?
+  codeExpires       DateTime?
+  verificationAttempts Int    @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 // Marques de véhicules

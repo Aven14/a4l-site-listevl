@@ -42,14 +42,8 @@ export default function RegisterPage() {
         return
       }
 
-      // Connexion automatique après inscription
-      await signIn('credentials', {
-        username,
-        password,
-        redirect: false,
-      })
-
-      router.push('/admin')
+      // Rediriger vers la page de vérification
+      router.push(`/auth/verify?email=${encodeURIComponent(email)}`)
     } catch (e) {
       setError('Erreur lors de l\'inscription')
       setLoading(false)

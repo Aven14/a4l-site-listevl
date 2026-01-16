@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { generateVerificationCode, sendVerificationEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
     const { username, email, password } = await req.json()
+
+    // Validation des champs
+    if (!username || !email || !password) {
+      return NextResponse.json(
+        { error: 'Tous les champs sont requis' },
+        { status: 400 }
+      )
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Le mot de passe doit contenir au moins 6 caractères' },
+        { status: 400 }
+      )
+    }
 
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await prisma.user.findFirst({
@@ -28,17 +44,39 @@ export async function POST(req: NextRequest) {
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Créer l'utilisateur
+    // Générer le code de vérification
+    const verificationCode = generateVerificationCode()
+    const codeExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+    // Créer l'utilisateur avec isVerified: false
     const user = await prisma.user.create({
       data: {
         username,
         email,
         password: hashedPassword,
         roleId: userRole?.id,
+        isVerified: false,
+        verificationCode,
+        codeExpires,
+        verificationAttempts: 0,
       },
     })
 
-    return NextResponse.json({ success: true, userId: user.id })
+    // Envoyer l'e-mail de vérification
+    try {
+      await sendVerificationEmail(email, verificationCode, username)
+    } catch (emailError) {
+      console.error('Erreur envoi e-mail:', emailError)
+      // Ne pas échouer l'inscription si l'e-mail échoue
+      // L'utilisateur pourra demander un nouveau code plus tard
+    }
+
+    return NextResponse.json({
+      success: true,
+      userId: user.id,
+      email: user.email,
+      message: 'Compte créé avec succès. Vérifiez votre e-mail pour activer votre compte.',
+    })
   } catch (error) {
     console.error('Erreur inscription:', error)
     return NextResponse.json(

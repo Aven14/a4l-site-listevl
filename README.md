@@ -151,7 +151,25 @@ Le site sera accessible sur http://localhost:3000
 - ✅ Responsive (mobile + desktop)
 - ✅ Animations fluides
 
-## 🚀 Déploiement sur GitHub
+## 🚀 Déploiement
+
+### Sur Netlify (Recommandé - SSR avec API Routes)
+
+Le projet est configuré pour fonctionner en mode **SSR (Server-Side Rendering)** sur Netlify avec les API Routes Next.js.
+
+**Voir `NETLIFY_SETUP.md` pour les instructions complètes.**
+
+Résumé rapide :
+1. Créer un projet Supabase (voir `SUPABASE_SETUP.md`)
+2. Connecter Netlify à ton repository Git
+3. Configurer les variables d'environnement sur Netlify
+4. Déployer !
+
+### Sur Vercel
+
+**Voir `VERCEL_SETUP.md` pour les instructions complètes.**
+
+### Sur GitHub (Code uniquement)
 
 ```bash
 # 1. Initialiser Git (si pas déjà fait)

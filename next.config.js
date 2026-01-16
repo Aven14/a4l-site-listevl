@@ -2,10 +2,11 @@
 const nextConfig = {
   images: {
     domains: ['localhost'],
-    unoptimized: true,
+    // Sur Netlify, les images sont optimisées automatiquement
+    unoptimized: false,
   },
-  // Pour export statique (optionnel, décommente si besoin)
-  // output: 'export',
+  // Mode SSR activé (pas d'export statique)
+  // Les API routes fonctionneront sur Netlify Functions
 }
 
 module.exports = nextConfig
