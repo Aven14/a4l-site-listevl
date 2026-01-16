@@ -38,6 +38,16 @@ export default function AccountPage() {
     setMessage('')
     setError('')
 
+    // Vérifier si l'e-mail change
+    const emailChanged = session?.user?.email !== form.email
+    if (emailChanged) {
+      // Demander confirmation si l'e-mail change
+      if (!confirm('Êtes-vous sûr de vouloir changer votre adresse e-mail ? Un e-mail de confirmation sera envoyé à votre ancienne et nouvelle adresse e-mail.')) {
+        setLoading(false)
+        return
+      }
+    }
+
     const res = await fetch('/api/account', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -66,6 +76,12 @@ export default function AccountPage() {
 
     if (form.newPassword !== form.confirmPassword) {
       setError('Les mots de passe ne correspondent pas')
+      setLoading(false)
+      return
+    }
+
+    // Demander confirmation avant de changer le mot de passe
+    if (!confirm('Êtes-vous sûr de vouloir changer votre mot de passe ? Un e-mail de confirmation sera envoyé à votre adresse e-mail.')) {
       setLoading(false)
       return
     }
