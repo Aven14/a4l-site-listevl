@@ -8,8 +8,14 @@ async function getBrands() {
   })
 }
 
+type BrandWithCount = {
+  id: string
+  name: string
+  _count: { vehicles: number }
+}
+
 export default async function HomePage() {
-  const brands = await getBrands()
+  const brands = await getBrands() as BrandWithCount[]
 
   return (
     <div className="min-h-screen">
@@ -45,7 +51,7 @@ export default async function HomePage() {
             </div>
             <div>
               <div className="font-display text-4xl font-bold text-green-400">
-                {brands.reduce((acc: number, b: { _count: { vehicles: number } }) => acc + b._count.vehicles, 0)}
+                {brands.reduce((acc: number, b: BrandWithCount) => acc + b._count.vehicles, 0)}
               </div>
               <div className="text-gray-500 mt-1">Véhicules</div>
             </div>
@@ -64,7 +70,7 @@ export default async function HomePage() {
             NOS <span className="text-green-400">MARQUES</span>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {brands.map((brand: { id: string; name: string; _count: { vehicles: number } }, i: number) => (
+            {brands.map((brand: BrandWithCount, i: number) => (
               <Link
                 key={brand.id}
                 href={`/brands/${brand.id}`}
