@@ -1,0 +1,93 @@
+import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
+
+async function getBrands() {
+  return prisma.brand.findMany({
+    include: { _count: { select: { vehicles: true } } },
+    orderBy: { name: 'asc' },
+  })
+}
+
+export default async function HomePage() {
+  const brands = await getBrands()
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent" />
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="font-display text-5xl md:text-7xl font-bold text-white mb-6 tracking-wider">
+            VÉHICULES <span className="text-green-400">A4L</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+            Liste non-officielle des véhicules du serveur Arma For Life.
+            Retrouvez tous les véhicules disponibles avec leurs caractéristiques.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/vehicles" className="btn-primary">
+              Voir les véhicules
+            </Link>
+            <Link href="/brands" className="btn-secondary">
+              Parcourir les marques
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="py-12 border-y border-green-500/10">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="font-display text-4xl font-bold text-green-400">{brands.length}</div>
+              <div className="text-gray-500 mt-1">Marques</div>
+            </div>
+            <div>
+              <div className="font-display text-4xl font-bold text-green-400">
+                {brands.reduce((acc, b) => acc + b._count.vehicles, 0)}
+              </div>
+              <div className="text-gray-500 mt-1">Véhicules</div>
+            </div>
+            <div>
+              <div className="font-display text-4xl font-bold text-green-400">24/7</div>
+              <div className="text-gray-500 mt-1">Disponible</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Marques */}
+      <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="font-display text-3xl font-bold text-white mb-12 text-center">
+            NOS <span className="text-green-400">MARQUES</span>
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {brands.map((brand, i) => (
+              <Link
+                key={brand.id}
+                href={`/brands/${brand.id}`}
+                className="card card-hover p-6 text-center animate-fadeIn"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <div className="w-16 h-16 mx-auto mb-4 bg-dark-300 rounded-full flex items-center justify-center">
+                  <span className="font-display text-2xl font-bold text-green-400">
+                    {brand.name.charAt(0)}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-white">{brand.name}</h3>
+                <p className="text-sm text-gray-500">{brand._count.vehicles} véhicules</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 border-t border-green-500/10 text-center text-gray-500">
+        <p>© 2024 Arma For Life - Serveur Arma 3 RP</p>
+      </footer>
+    </div>
+  )
+}
