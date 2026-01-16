@@ -16,6 +16,11 @@ type BrandWithCount = {
 
 export default async function HomePage() {
   const brands = await getBrands() as BrandWithCount[]
+  
+  // Calculer le total de véhicules
+  const totalVehicles = brands.reduce((sum: number, brand: BrandWithCount): number => {
+    return sum + brand._count.vehicles
+  }, 0)
 
   return (
     <div className="min-h-screen">
@@ -51,7 +56,7 @@ export default async function HomePage() {
             </div>
             <div>
               <div className="font-display text-4xl font-bold text-green-400">
-                {brands.reduce((acc: number, b: BrandWithCount) => acc + b._count.vehicles, 0)}
+                {totalVehicles}
               </div>
               <div className="text-gray-500 mt-1">Véhicules</div>
             </div>
