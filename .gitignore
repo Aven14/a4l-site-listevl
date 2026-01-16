@@ -54,3 +54,6 @@ next-env.d.ts
 # OS
 Thumbs.db
 .DS_Store
+
+# PHP files for deployment (not versioned)
+index.php

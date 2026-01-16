@@ -64,7 +64,7 @@ export default async function HomePage() {
             NOS <span className="text-green-400">MARQUES</span>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {brands.map((brand, i) => (
+            {brands.map((brand: { id: string; name: string; _count: { vehicles: number } }, i: number) => (
               <Link
                 key={brand.id}
                 href={`/brands/${brand.id}`}
