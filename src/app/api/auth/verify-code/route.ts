@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force cette route à être dynamique
+export const dynamic = 'force-dynamic'
+
 const MAX_ATTEMPTS = 5
 
 export async function POST(req: NextRequest) {

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateVerificationCode, sendVerificationEmail } from '@/lib/email'
 
+// Force cette route à être dynamique
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json()

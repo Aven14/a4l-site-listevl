@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateVerificationCode, sendVerificationEmail } from '@/lib/email'
 
+// Force cette route à être dynamique
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { username, email, password } = await req.json()
