@@ -8,9 +8,12 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
   const token = searchParams.get('token')
+  
+  // Utiliser l'origine de la requête sans port pour éviter les erreurs SSL
+  const origin = req.nextUrl.origin
 
   if (!token) {
-    return NextResponse.redirect(new URL('/account?error=token-manquant', req.url))
+    return NextResponse.redirect(`${origin}/account?error=token-manquant`)
   }
 
   // Trouver l'utilisateur avec ce token
@@ -21,7 +24,7 @@ export async function GET(req: NextRequest) {
   })
 
   if (!user) {
-    return NextResponse.redirect(new URL('/account?error=token-invalide', req.url))
+    return NextResponse.redirect(`${origin}/account?error=token-invalide`)
   }
 
   // Vérifier si le token est expiré
@@ -35,12 +38,12 @@ export async function GET(req: NextRequest) {
         emailChangePending: null,
       },
     })
-    return NextResponse.redirect(new URL('/account?error=token-expire', req.url))
+    return NextResponse.redirect(`${origin}/account?error=token-expire`)
   }
 
   // Vérifier qu'il y a un nouvel e-mail en attente
   if (!user.emailChangePending) {
-    return NextResponse.redirect(new URL('/account?error=demande-invalide', req.url))
+    return NextResponse.redirect(`${origin}/account?error=demande-invalide`)
   }
 
   // Stocker l'ancien e-mail avant la mise à jour
@@ -72,5 +75,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL('/account?email-changed=true', req.url))
+  return NextResponse.redirect(`${origin}/account?email-changed=true`)
 }

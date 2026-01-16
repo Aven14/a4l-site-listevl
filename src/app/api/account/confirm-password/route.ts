@@ -8,9 +8,12 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
   const token = searchParams.get('token')
+  
+  // Utiliser l'origine de la requête sans port pour éviter les erreurs SSL
+  const origin = req.nextUrl.origin
 
   if (!token) {
-    return NextResponse.redirect(new URL('/account?error=token-manquant', req.url))
+    return NextResponse.redirect(`${origin}/account?error=token-manquant`)
   }
 
   // Trouver l'utilisateur avec ce token
@@ -21,7 +24,7 @@ export async function GET(req: NextRequest) {
   })
 
   if (!user) {
-    return NextResponse.redirect(new URL('/account?error=token-invalide', req.url))
+    return NextResponse.redirect(`${origin}/account?error=token-invalide`)
   }
 
   // Vérifier si le token est expiré
@@ -35,12 +38,12 @@ export async function GET(req: NextRequest) {
         passwordChangePending: null,
       },
     })
-    return NextResponse.redirect(new URL('/account?error=token-expire', req.url))
+    return NextResponse.redirect(`${origin}/account?error=token-expire`)
   }
 
   // Vérifier qu'il y a un nouveau mot de passe en attente
   if (!user.passwordChangePending) {
-    return NextResponse.redirect(new URL('/account?error=demande-invalide', req.url))
+    return NextResponse.redirect(`${origin}/account?error=demande-invalide`)
   }
 
   // Appliquer le changement de mot de passe
@@ -67,5 +70,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL('/account?password-changed=true', req.url))
+  return NextResponse.redirect(`${origin}/account?password-changed=true`)
 }
