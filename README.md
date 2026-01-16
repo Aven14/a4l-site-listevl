@@ -5,7 +5,7 @@ Site de concession automobile pour le serveur Arma 3 RP **Arma For Life**.
 ## 🛠️ Stack Technique
 
 - **Frontend/Backend**: Next.js 14 (App Router)
-- **Base de données**: SQLite avec Prisma ORM
+- **Base de données**: Supabase (PostgreSQL) avec Prisma ORM
 - **Authentification**: NextAuth.js
 - **Styling**: Tailwind CSS
 
@@ -19,18 +19,25 @@ cd arma-for-life-concession
 # 2. Installer les dépendances
 npm install
 
-# 3. Créer le fichier .env
-# Copier .env.example et le renommer en .env
-cp .env.example .env
-# Puis modifier les valeurs si nécessaire
+# 3. Configurer Supabase
+# Voir SUPABASE_SETUP.md pour les instructions détaillées
+# Créer un projet sur https://supabase.com
+# Récupérer la connection string
 
-# 4. Initialiser la base de données
+# 4. Créer le fichier .env
+# Ajouter :
+# DATABASE_URL="postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres"
+# NEXTAUTH_SECRET="votre-secret-aleatoire"
+# NEXTAUTH_URL="http://localhost:3000"
+
+# 5. Initialiser la base de données
+npx prisma generate
 npx prisma db push
 
-# 5. Ajouter les données d'exemple
+# 6. Ajouter les données d'exemple
 npm run db:seed
 
-# 6. Lancer le serveur de développement
+# 7. Lancer le serveur de développement
 npm run dev
 ```
 
