@@ -40,9 +40,9 @@ export async function sendVerificationEmail(
   const transporter = createTransporter()
 
   const mailOptions = {
-    from: `"Arma For Life" <${process.env.SMTP_USER || 'noreply@a4l.com'}>`,
+    from: `"Catalogue Véhicule A4L" <${process.env.SMTP_USER || 'noreply@a4l.com'}>`,
     to: email,
-    subject: 'Vérification de votre compte - Arma For Life',
+    subject: 'Vérification de votre compte - Catalogue Véhicule A4L',
     html: `
       <!DOCTYPE html>
       <html>
@@ -120,7 +120,12 @@ export async function sendVerificationEmail(
             
             <p>Bonjour${username ? ` ${username}` : ''},</p>
             
-            <p>Merci de vous être inscrit sur <strong>Arma For Life</strong> !</p>
+            <p>Merci de vous être inscrit sur <strong>Catalogue Véhicule A4L</strong> !</p>
+            
+            <p style="color: #888; font-size: 14px; margin-top: 10px;">
+              <em>Note : Ce site est un catalogue non-officiel créé par des joueurs du serveur Arma For Life. 
+              Nous ne sommes pas affiliés au serveur officiel Arma For Life.</em>
+            </p>
             
             <p>Pour activer votre compte, veuillez entrer le code de vérification suivant :</p>
             
@@ -140,7 +145,10 @@ export async function sendVerificationEmail(
             <p>Si vous n'avez pas demandé ce code, vous pouvez ignorer cet e-mail en toute sécurité.</p>
             
             <div class="footer">
-              <p>© ${new Date().getFullYear()} Arma For Life - Tous droits réservés</p>
+              <p>© ${new Date().getFullYear()} Catalogue Véhicule A4L - Site non-officiel créé par des joueurs</p>
+              <p style="font-size: 11px; color: #666; margin-top: 5px;">
+                Ce site n'est pas affilié au serveur officiel Arma For Life.
+              </p>
               <p>Cet e-mail a été envoyé automatiquement, merci de ne pas y répondre.</p>
             </div>
           </div>
@@ -150,7 +158,10 @@ export async function sendVerificationEmail(
     text: `
 Bonjour${username ? ` ${username}` : ''},
 
-Merci de vous être inscrit sur Arma For Life !
+Merci de vous être inscrit sur Catalogue Véhicule A4L !
+
+Note : Ce site est un catalogue non-officiel créé par des joueurs du serveur Arma For Life. 
+Nous ne sommes pas affiliés au serveur officiel Arma For Life.
 
 Pour activer votre compte, veuillez entrer le code de vérification suivant :
 
@@ -160,7 +171,8 @@ Ce code est valide pendant 10 minutes uniquement.
 
 Si vous n'avez pas créé de compte, ignorez cet e-mail.
 
-© ${new Date().getFullYear()} Arma For Life
+© ${new Date().getFullYear()} Catalogue Véhicule A4L - Site non-officiel créé par des joueurs
+Ce site n'est pas affilié au serveur officiel Arma For Life.
     `.trim(),
   }
 

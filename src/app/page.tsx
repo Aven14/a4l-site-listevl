@@ -97,7 +97,8 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="py-8 border-t border-green-500/10 text-center text-gray-500">
-        <p>© 2024 Arma For Life - Serveur Arma 3 RP</p>
+        <p>© 2024 Catalogue Véhicule A4L - Site non-officiel créé par des joueurs</p>
+        <p className="text-sm text-gray-600 mt-1">Ce site n'est pas affilié au serveur officiel Arma For Life</p>
       </footer>
     </div>
   )

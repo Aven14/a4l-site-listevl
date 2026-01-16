@@ -4,8 +4,8 @@ import { Providers } from '@/components/Providers'
 import { Navbar } from '@/components/Navbar'
 
 export const metadata: Metadata = {
-  title: 'Arma For Life - Concession Automobile',
-  description: 'Concession automobile du serveur Arma 3 RP - Arma For Life',
+  title: 'Catalogue Véhicule A4L - Liste non-officielle',
+  description: 'Catalogue non-officiel des véhicules du serveur Arma 3 RP Arma For Life, créé par des joueurs',
 }
 
 export default function RootLayout({
