@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function AccountPage() {
+function AccountContent() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -31,6 +32,46 @@ export default function AccountPage() {
       }))
     }
   }, [session])
+
+  // Gérer les messages depuis l'URL (confirmation par e-mail)
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      switch (errorParam) {
+        case 'token-manquant':
+          setError('Token de confirmation manquant')
+          break
+        case 'token-invalide':
+          setError('Token de confirmation invalide')
+          break
+        case 'token-expire':
+          setError('Le lien de confirmation a expiré. Veuillez refaire la demande.')
+          break
+        case 'demande-invalide':
+          setError('Demande de changement invalide')
+          break
+        default:
+          setError('Une erreur est survenue')
+      }
+    }
+
+    const successParam = searchParams.get('password-changed')
+    if (successParam === 'true') {
+      setMessage('Mot de passe modifié avec succès ! Un e-mail de confirmation a été envoyé.')
+      setForm(f => ({ ...f, currentPassword: '', newPassword: '', confirmPassword: '' }))
+      update()
+    }
+
+    const emailChanged = searchParams.get('email-changed')
+    if (emailChanged === 'true') {
+      setMessage('Adresse e-mail modifiée avec succès ! Un e-mail de confirmation a été envoyé. Reconnectez-vous pour voir les changements.')
+      update()
+      // Mettre à jour le formulaire avec le nouvel e-mail
+      if (session?.user?.email) {
+        setForm(f => ({ ...f, email: session.user.email || '' }))
+      }
+    }
+  }, [searchParams, update, session])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,8 +102,15 @@ export default function AccountPage() {
     setLoading(false)
 
     if (res.ok) {
-      setMessage('Profil mis à jour ! Reconnectez-vous pour voir les changements.')
-      await update()
+      if (data.emailPending) {
+        // Changement d'e-mail en attente de confirmation
+        setMessage(data.message || 'Un e-mail de confirmation a été envoyé. Veuillez cliquer sur le lien pour confirmer le changement d\'e-mail.')
+        // Ne pas mettre à jour le formulaire car l'e-mail n'a pas encore changé
+      } else {
+        // Seul le username a changé
+        setMessage('Profil mis à jour ! Reconnectez-vous pour voir les changements.')
+        await update()
+      }
     } else {
       setError(data.error || 'Erreur lors de la mise à jour')
     }
@@ -99,7 +147,7 @@ export default function AccountPage() {
     setLoading(false)
 
     if (res.ok) {
-      setMessage('Mot de passe mis à jour !')
+      setMessage(data.message || 'Un e-mail de confirmation a été envoyé. Veuillez cliquer sur le lien pour confirmer le changement de mot de passe.')
       setForm(f => ({ ...f, currentPassword: '', newPassword: '', confirmPassword: '' }))
     } else {
       setError(data.error || 'Erreur lors de la mise à jour')
@@ -224,5 +272,15 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center text-gray-500">Chargement...</div>
+    }>
+      <AccountContent />
+    </Suspense>
   )
 }

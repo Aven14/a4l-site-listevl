@@ -40,6 +40,14 @@ model User {
   verificationCode  String?
   codeExpires       DateTime?
   verificationAttempts Int    @default(0)
+  // Changement de mot de passe
+  passwordChangeToken String?
+  passwordChangeExpires DateTime?
+  passwordChangePending String? // Hashed new password
+  // Changement d'e-mail
+  emailChangeToken  String?
+  emailChangeExpires DateTime?
+  emailChangePending String? // Nouvel e-mail en attente
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }

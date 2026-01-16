@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { sendEmailChangeConfirmation } from '@/lib/email'
+import { generateSecureToken, sendEmailChangeRequest, sendEmailChangeConfirmation } from '@/lib/email'
 
 // Force cette route à être dynamique
 export const dynamic = 'force-dynamic'
@@ -40,27 +40,77 @@ export async function PUT(req: NextRequest) {
   const oldEmail = currentUser.email
   let emailChanged = false
 
+  // Si le username change, on peut le mettre à jour directement
+  if (username !== currentUser.username) {
+    const existing = await prisma.user.findUnique({ where: { username } })
+    if (existing) {
+      return NextResponse.json({ error: 'Ce nom d\'utilisateur est déjà pris' }, { status: 400 })
+    }
+  }
+
+  // Si l'e-mail change, créer une demande de confirmation
   if (email !== currentUser.email) {
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 400 })
     }
     emailChanged = true
+
+    // Générer un token de confirmation
+    const token = generateSecureToken()
+    const expires = new Date(Date.now() + 60 * 60 * 1000) // 1 heure
+
+    // Sauvegarder la demande avec le token (mais ne pas changer l'e-mail encore)
+    await prisma.user.update({
+      where: { id: currentUser.id },
+      data: {
+        username: username !== currentUser.username ? username : currentUser.username, // Mettre à jour le username si changé
+        emailChangeToken: token,
+        emailChangeExpires: expires,
+        emailChangePending: email, // Nouvel e-mail en attente
+      },
+    })
+
+    // Envoyer un e-mail avec le lien de confirmation à l'ancienne adresse
+    if (oldEmail) {
+      try {
+        await sendEmailChangeRequest(
+          oldEmail,
+          email,
+          token,
+          currentUser.username || undefined
+        )
+      } catch (error) {
+        console.error('Erreur envoi e-mail:', error)
+        // Supprimer la demande si l'e-mail ne peut pas être envoyé
+        await prisma.user.update({
+          where: { id: currentUser.id },
+          data: {
+            emailChangeToken: null,
+            emailChangeExpires: null,
+            emailChangePending: null,
+          },
+        })
+        return NextResponse.json(
+          { error: 'Impossible d\'envoyer l\'e-mail de confirmation' },
+          { status: 500 }
+        )
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      emailPending: true,
+      message: 'Un e-mail de confirmation a été envoyé. Veuillez cliquer sur le lien pour confirmer le changement d\'e-mail.',
+    })
   }
 
-  await prisma.user.update({
-    where: { id: currentUser.id },
-    data: { username, email },
-  })
-
-  // Envoyer un e-mail de confirmation si l'e-mail a changé
-  if (emailChanged && oldEmail && email) {
-    try {
-      await sendEmailChangeConfirmation(oldEmail, email, currentUser.username || undefined)
-    } catch (error) {
-      console.error('Erreur envoi e-mail confirmation:', error)
-      // Ne pas faire échouer la requête si l'e-mail ne peut pas être envoyé
-    }
+  // Si seul le username change (pas d'e-mail), mettre à jour directement
+  if (username !== currentUser.username) {
+    await prisma.user.update({
+      where: { id: currentUser.id },
+      data: { username },
+    })
   }
 
   return NextResponse.json({ success: true })
