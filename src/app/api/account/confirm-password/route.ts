@@ -9,11 +9,17 @@ export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
   const token = searchParams.get('token')
   
-  // Utiliser l'origine de la requête sans port pour éviter les erreurs SSL
-  const origin = req.nextUrl.origin
+  // Construire l'URL de base sans port (en utilisant NEXTAUTH_URL ou l'origine de la requête nettoyée)
+  const baseUrl = process.env.NEXTAUTH_URL || (() => {
+    const host = req.headers.get('host') || ''
+    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https'
+    // Retirer le port s'il est présent (ex: host:80)
+    const cleanHost = host.split(':')[0]
+    return `${protocol}://${cleanHost}`
+  })()
 
   if (!token) {
-    return NextResponse.redirect(`${origin}/account?error=token-manquant`)
+    return NextResponse.redirect(new URL('/account?error=token-manquant', baseUrl))
   }
 
   // Trouver l'utilisateur avec ce token
@@ -24,7 +30,7 @@ export async function GET(req: NextRequest) {
   })
 
   if (!user) {
-    return NextResponse.redirect(`${origin}/account?error=token-invalide`)
+    return NextResponse.redirect(new URL('/account?error=token-invalide', baseUrl))
   }
 
   // Vérifier si le token est expiré
@@ -38,12 +44,12 @@ export async function GET(req: NextRequest) {
         passwordChangePending: null,
       },
     })
-    return NextResponse.redirect(`${origin}/account?error=token-expire`)
+    return NextResponse.redirect(new URL('/account?error=token-expire', baseUrl))
   }
 
   // Vérifier qu'il y a un nouveau mot de passe en attente
   if (!user.passwordChangePending) {
-    return NextResponse.redirect(`${origin}/account?error=demande-invalide`)
+    return NextResponse.redirect(new URL('/account?error=demande-invalide', baseUrl))
   }
 
   // Appliquer le changement de mot de passe
@@ -70,5 +76,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/account?password-changed=true`)
+  return NextResponse.redirect(new URL('/account?password-changed=true', baseUrl))
 }
