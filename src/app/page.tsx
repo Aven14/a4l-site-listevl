@@ -45,7 +45,7 @@ export default async function HomePage() {
             </div>
             <div>
               <div className="font-display text-4xl font-bold text-green-400">
-                {brands.reduce((acc, b) => acc + b._count.vehicles, 0)}
+                {brands.reduce((acc: number, b: { _count: { vehicles: number } }) => acc + b._count.vehicles, 0)}
               </div>
               <div className="text-gray-500 mt-1">Véhicules</div>
             </div>
