@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { sendPasswordChangeConfirmation } from '@/lib/email'
+
+// Force cette route à être dynamique
+export const dynamic = 'force-dynamic'
 
 export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -37,6 +41,19 @@ export async function PUT(req: NextRequest) {
     where: { id: currentUser.id },
     data: { password: hashedPassword },
   })
+
+  // Envoyer un e-mail de confirmation
+  if (currentUser.email) {
+    try {
+      await sendPasswordChangeConfirmation(
+        currentUser.email,
+        currentUser.username || undefined
+      )
+    } catch (error) {
+      console.error('Erreur envoi e-mail confirmation:', error)
+      // Ne pas faire échouer la requête si l'e-mail ne peut pas être envoyé
+    }
+  }
 
   return NextResponse.json({ success: true })
 }

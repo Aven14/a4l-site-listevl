@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendEmailChangeConfirmation } from '@/lib/email'
+
+// Force cette route à être dynamique
+export const dynamic = 'force-dynamic'
 
 export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -33,17 +37,31 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  const oldEmail = currentUser.email
+  let emailChanged = false
+
   if (email !== currentUser.email) {
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 400 })
     }
+    emailChanged = true
   }
 
   await prisma.user.update({
     where: { id: currentUser.id },
     data: { username, email },
   })
+
+  // Envoyer un e-mail de confirmation si l'e-mail a changé
+  if (emailChanged && oldEmail && email) {
+    try {
+      await sendEmailChangeConfirmation(oldEmail, email, currentUser.username || undefined)
+    } catch (error) {
+      console.error('Erreur envoi e-mail confirmation:', error)
+      // Ne pas faire échouer la requête si l'e-mail ne peut pas être envoyé
+    }
+  }
 
   return NextResponse.json({ success: true })
 }
