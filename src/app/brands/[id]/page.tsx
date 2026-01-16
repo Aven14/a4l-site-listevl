@@ -36,7 +36,7 @@ export default async function BrandPage({ params }: { params: { id: string } }) 
 
         {/* Véhicules */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {brand.vehicles.map((vehicle, i) => {
+          {brand.vehicles.map((vehicle: { id: string; name: string; description: string | null; price: number; images: string }, i: number) => {
             const images = JSON.parse(vehicle.images || '[]')
             return (
               <Link
